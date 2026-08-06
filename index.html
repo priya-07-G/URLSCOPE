@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LOGWATCH // Anomaly Visualizer</title>
+<title>BREACHSCAN // Exposure Checker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -14,149 +14,78 @@
 
 <header class="topbar">
   <div class="brand">
-    <span class="brand-mark">◈</span>
+    <span class="brand-mark">◉</span>
     <div class="brand-text">
-      <h1>LOGWATCH</h1>
-      <span class="tagline">log anomaly visualizer</span>
+      <h1>BREACHSCAN</h1>
+      <span class="tagline">data exposure checker · simulated dataset</span>
     </div>
   </div>
-  <div class="status-cluster">
-    <div class="status-pill" id="statusPill">
-      <span class="dot dot-idle"></span>
-      <span id="statusText">awaiting input</span>
-    </div>
-    <span class="clock" id="clock">--:--:--</span>
-  </div>
+  <span class="disclaimer-pill">local simulation — not connected to real breach data</span>
 </header>
 
 <main class="layout">
 
-  <!-- LEFT: input + table -->
-  <section class="panel panel-main">
+  <!-- SEARCH -->
+  <section class="panel panel-search">
     <div class="panel-head">
-      <h2><span class="idx">01</span> ingest</h2>
-      <div class="input-actions">
-        <button class="btn btn-ghost" id="loadSampleBtn">load sample set</button>
-        <label class="btn btn-ghost" for="fileInput">upload .csv
-          <input type="file" id="fileInput" accept=".csv,.txt" hidden>
-        </label>
-      </div>
+      <h2><span class="idx">01</span> check exposure</h2>
     </div>
+    <div class="search-row">
+      <input type="text" id="queryInput" class="search-input" placeholder="enter email or username, e.g. priya.g@example.com" spellcheck="false">
+      <button class="btn btn-primary" id="checkBtn">scan</button>
+    </div>
+    <p class="hint">try: <span class="hint-example" data-fill="priya.g@example.com">priya.g@example.com</span>, <span class="hint-example" data-fill="arjun_k99">arjun_k99</span>, <span class="hint-example" data-fill="test@mail.com">test@mail.com</span></p>
 
-    <textarea id="logInput" class="log-input" spellcheck="false"
-      placeholder="timestamp,user,ip,event,status&#10;2026-08-01 02:14:05,r.menon,103.21.9.4,login,failed&#10;2026-08-01 02:14:11,r.menon,103.21.9.4,login,failed&#10;...paste raw logs or load the sample set above"></textarea>
-
-    <button class="btn btn-primary" id="analyzeBtn">run analysis</button>
-
-    <div class="table-wrap" id="tableWrap" hidden>
-      <div class="panel-head panel-head-tight">
-        <h2><span class="idx">02</span> parsed events</h2>
-        <span class="count-badge" id="rowCount">0 rows</span>
-      </div>
-      <div class="table-scroll">
-        <table id="logTable">
-          <thead>
-            <tr>
-              <th>time</th><th>user</th><th>ip</th><th>event</th><th>status</th><th>flag</th>
-            </tr>
-          </thead>
-          <tbody id="logTableBody"></tbody>
-        </table>
-      </div>
+    <div class="result-block" id="resultBlock" hidden>
+      <div class="result-summary" id="resultSummary"></div>
+      <div class="breach-list" id="breachList"></div>
     </div>
   </section>
 
-  <!-- RIGHT: stats + rules -->
-  <aside class="panel panel-side">
+  <!-- PASSWORD STRENGTH -->
+  <section class="panel panel-pw">
     <div class="panel-head">
-      <h2><span class="idx">03</span> risk summary</h2>
+      <h2><span class="idx">02</span> password strength estimator</h2>
     </div>
-    <div class="stat-grid" id="statGrid">
-      <div class="stat-card stat-total">
-        <span class="stat-value" id="statTotal">0</span>
-        <span class="stat-label">events parsed</span>
-      </div>
-      <div class="stat-card stat-crit">
-        <span class="stat-value" id="statCritical">0</span>
-        <span class="stat-label">critical flags</span>
-      </div>
-      <div class="stat-card stat-warn">
-        <span class="stat-value" id="statWarn">0</span>
-        <span class="stat-label">warning flags</span>
-      </div>
-      <div class="stat-card stat-clean">
-        <span class="stat-value" id="statClean">0</span>
-        <span class="stat-label">clean events</span>
-      </div>
+    <input type="text" id="pwInput" class="search-input" placeholder="type a password to test (nothing is stored or sent)" spellcheck="false" autocomplete="off">
+    <div class="strength-meter">
+      <div class="strength-bar" id="strengthBar"></div>
     </div>
+    <div class="strength-info">
+      <span id="strengthLabel">—</span>
+      <span id="crackTime">enter a password above</span>
+    </div>
+    <ul class="pw-checklist" id="pwChecklist">
+      <li data-check="length">8+ characters</li>
+      <li data-check="upper">uppercase letter</li>
+      <li data-check="lower">lowercase letter</li>
+      <li data-check="number">number</li>
+      <li data-check="symbol">symbol</li>
+      <li data-check="common">not a common password</li>
+    </ul>
+  </section>
 
-    <div class="panel-head panel-head-tight">
-      <h2><span class="idx">04</span> detection rules</h2>
+  <!-- ADVICE PANEL -->
+  <aside class="panel panel-advice">
+    <div class="panel-head">
+      <h2><span class="idx">03</span> if you're breached</h2>
     </div>
-    <ul class="rule-list" id="ruleList">
-      <li class="rule-item" data-rule="offhours">
-        <span class="rule-dot"></span>
-        <div>
-          <strong>off-hours access</strong>
-          <p>login events between 00:00–05:00</p>
-        </div>
-        <span class="rule-count" id="ruleCount-offhours">0</span>
-      </li>
-      <li class="rule-item" data-rule="bruteforce">
-        <span class="rule-dot"></span>
-        <div>
-          <strong>brute-force pattern</strong>
-          <p>4+ failed logins, same user/ip, &lt;10 min</p>
-        </div>
-        <span class="rule-count" id="ruleCount-bruteforce">0</span>
-      </li>
-      <li class="rule-item" data-rule="travel">
-        <span class="rule-dot"></span>
-        <div>
-          <strong>impossible travel</strong>
-          <p>same user, different ip, &lt;15 min apart</p>
-        </div>
-        <span class="rule-count" id="ruleCount-travel">0</span>
-      </li>
-      <li class="rule-item" data-rule="spike">
-        <span class="rule-dot"></span>
-        <div>
-          <strong>event spike</strong>
-          <p>burst of 6+ events in a single minute</p>
-        </div>
-        <span class="rule-count" id="ruleCount-spike">0</span>
-      </li>
+    <ul class="advice-list">
+      <li><strong>Change the password</strong><p>on the breached account, and anywhere else you reused it.</p></li>
+      <li><strong>Turn on 2FA</strong><p>authenticator app over SMS where possible.</p></li>
+      <li><strong>Check for reuse</strong><p>use a password manager so no two accounts share a password.</p></li>
+      <li><strong>Watch for phishing</strong><p>breached data is often used to craft targeted follow-up scams.</p></li>
+      <li><strong>Monitor accounts</strong><p>bank/email activity for a few weeks after exposure.</p></li>
     </ul>
   </aside>
-
-  <!-- BOTTOM: timeline + heatmap -->
-  <section class="panel panel-wide">
-    <div class="panel-head">
-      <h2><span class="idx">05</span> timeline</h2>
-      <span class="legend">
-        <span class="legend-item"><span class="sw sw-clean"></span>clean</span>
-        <span class="legend-item"><span class="sw sw-warn"></span>warning</span>
-        <span class="legend-item"><span class="sw sw-crit"></span>critical</span>
-      </span>
-    </div>
-    <canvas id="timelineCanvas" height="140"></canvas>
-  </section>
-
-  <section class="panel panel-wide">
-    <div class="panel-head">
-      <h2><span class="idx">06</span> hourly heatmap</h2>
-      <span class="legend-note">darker = more events at that hour</span>
-    </div>
-    <canvas id="heatmapCanvas" height="120"></canvas>
-    <div class="heatmap-axis" id="heatmapAxis"></div>
-  </section>
 
 </main>
 
 <footer class="footer">
-  <span>heuristic, client-side analysis — no data leaves this browser</span>
+  <span>all checks run against a bundled local dataset — nothing you type leaves this browser</span>
 </footer>
 
+<script src="breaches.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
