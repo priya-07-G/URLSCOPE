@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URLSCOPE // Phishing Link Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="scan-grid" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">urlscope</span><span class="brand-cursor">_</span>
+    </div>
+    <div class="status-chip" id="statusChip">
+      <span class="dot"></span> IDLE
+    </div>
+  </header>
+
+  <main class="console">
+    <section class="intro">
+      <p class="eyebrow">// static heuristic link analysis — no network calls, nothing leaves your browser</p>
+      <h1>Paste a link. See what a phisher hoped you wouldn't.</h1>
+    </section>
+
+    <section class="input-rig">
+      <div class="prompt-line">
+        <span class="prompt-glyph">root@urlscope:~$</span>
+        <input
+          type="text"
+          id="urlInput"
+          placeholder="paste-a-suspicious-url-here.example.com/login"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+      <button id="scanBtn" class="scan-btn">
+        <span class="btn-label">RUN SCAN</span>
+        <span class="btn-sweep" aria-hidden="true"></span>
+      </button>
+    </section>
+
+    <section class="report" id="report" hidden>
+
+      <div class="report-head">
+        <div class="verdict-block">
+          <div class="verdict-label">VERDICT</div>
+          <div class="verdict-value" id="verdictText">—</div>
+        </div>
+        <div class="gauge-block">
+          <div class="gauge" id="gauge">
+            <svg viewBox="0 0 120 68" class="gauge-svg">
+              <path d="M10,60 A50,50 0 0,1 110,60" class="gauge-track" />
+              <path d="M10,60 A50,50 0 0,1 110,60" class="gauge-fill" id="gaugeFill" />
+            </svg>
+            <div class="gauge-score" id="gaugeScore">0</div>
+            <div class="gauge-sub">RISK / 100</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="target-line">
+        <span class="target-label">TARGET</span>
+        <span class="target-value" id="targetValue">—</span>
+      </div>
+
+      <div class="findings">
+        <div class="findings-head">
+          <span>#</span><span>CHECK</span><span>RESULT</span><span>SIGNAL</span>
+        </div>
+        <div class="findings-body" id="findingsBody"></div>
+      </div>
+
+      <p class="disclaimer">
+        Heuristic estimate only — not a substitute for URL reputation databases, sandboxing, or your own judgment. Always verify the sender through a separate trusted channel before entering credentials.
+      </p>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
